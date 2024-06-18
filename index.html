@@ -1,31 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Currency Converter</title>
-  <link rel="stylesheet" href="css/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Currency Converter</title>
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-  <div class="container">
-    <nav>
-      <button id="converterPage">Converter</button>
-      <button id="ratesPage">Rates</button>
-    </nav>
-    <div id="content">
-      <div id="converter" class="page">
-        <h2>Currency Converter</h2>
-        <input type="text" id="currencyInput" placeholder="15 USD in RUB">
-        <button id="convertButton">Convert</button>
-        <p id="conversionResult"></p>
-      </div>
-      <div id="rates" class="page hidden">
-        <h2>Exchange Rates</h2>
-        <p>Base Currency: <span id="baseCurrency">USD</span></p>
-        <div id="ratesList"></div>
-      </div>
-    </div>
-  </div>
-  <script src="js/script.js"></script>
+    <header>
+        <h1>Currency Converter</h1>
+        <nav>
+            <ul>
+                <li><a href="#converter">Converter</a></li>
+                <li><a href="#currency-rates">Currency Rates</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section id="converter" class="page">
+            <h2>Currency Converter</h2>
+            <div class="converter">
+                <input type="text" id="conversionInput" placeholder="Enter conversion (e.g., 15 USD to EUR)">
+                <button onclick="convertCurrency()">Convert</button>
+                <p id="conversionResult"></p>
+            </div>
+        </section>
+        <section id="currency-rates" class="page">
+            <h2>Currency Rates</h2>
+            <div id="currencyRates"></div>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2024 Currency Converter App</p>
+    </footer>
+    <script src="js/script.js"></script>
 </body>
 </html>
