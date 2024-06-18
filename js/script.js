@@ -1,63 +1,71 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const converterPage = document.getElementById("converterPage");
-  const ratesPage = document.getElementById("ratesPage");
-  const converterDiv = document.getElementById("converter");
-  const ratesDiv = document.getElementById("rates");
-  const currencyInput = document.getElementById("currencyInput");
-  const convertButton = document.getElementById("convertButton");
-  const conversionResult = document.getElementById("conversionResult");
-  const baseCurrencySpan = document.getElementById("baseCurrency");
-  const ratesList = document.getElementById("ratesList");
-
-  let baseCurrency = "USD";
-  baseCurrencySpan.textContent = baseCurrency;
-
-  const showConverterPage = () => {
-    converterDiv.classList.add("active");
-    ratesDiv.classList.remove("active");
-  };
-
-  const showRatesPage = () => {
-    converterDiv.classList.remove("active");
-    ratesDiv.classList.add("active");
-    fetchRates();
-  };
-
-  converterPage.addEventListener("click", showConverterPage);
-  ratesPage.addEventListener("click", showRatesPage);
-
-  const fetchRates = async () => {
-    try {
-      const response = await fetch(`https://openexchangerates.org/api/latest.json?app_id=YOUR_APP_ID`);
-      const data = await response.json();
-      const rates = data.rates;
-      ratesList.innerHTML = '';
-      for (const currency in rates) {
-        const rateItem = document.createElement("div");
-        rateItem.textContent = `1 ${baseCurrency} = ${rates[currency]} ${currency}`;
-        ratesList.appendChild(rateItem);
-      }
-    } catch (error) {
-      console.error("Error fetching exchange rates:", error);
+async function fetchCurrencyRates(baseCurrency = 'USD') {
+    const response = await fetch(`https://api.exchangerate-api.com/v4/latest/${baseCurrency}`);
+    if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
     }
-  };
+    const data = await response.json();
+    return data;
+}
 
-  const convertCurrency = async () => {
-    const [amount, from, , to] = currencyInput.value.toUpperCase().split(' ');
-    try {
-      const response = await fetch(`https://openexchangerates.org/api/latest.json?app_id=YOUR_APP_ID`);
-      const data = await response.json();
-      const rates = data.rates;
-      const convertedAmount = (amount / rates[from]) * rates[to];
-      conversionResult.textContent = `${amount} ${from} = ${convertedAmount.toFixed(2)} ${to}`;
-    } catch (error) {
-      console.error("Error converting currency:", error);
-      conversionResult.textContent = 'Error converting currency';
+function convertCurrency() {
+    const conversionInput = document.getElementById('conversionInput').value.trim().toLowerCase();
+    const conversionResult = document.getElementById('conversionResult');
+
+    if (!conversionInput) {
+        conversionResult.textContent = 'Please enter a conversion (e.g., 15 USD to EUR)';
+        return;
     }
-  };
 
-  convertButton.addEventListener("click", convertCurrency);
+    const regex = /^(\d+(?:\.\d+)?)\s+(\w{3})\s+(?:to|in)\s+(\w{3})$/;
+    const match = conversionInput.match(regex);
 
- 
-  showConverterPage();
+    if (!match) {
+        conversionResult.textContent = 'Invalid input format. Please enter in format like "15 USD to EUR".';
+        return;
+    }
+
+    const amount = parseFloat(match[1]);
+    const fromCurrency = match[2].toUpperCase();
+    const toCurrency = match[3].toUpperCase();
+
+    fetchCurrencyRates(fromCurrency)
+        .then(data => {
+            const rate = data.rates[toCurrency];
+            if (rate) {
+                const result = amount * rate;
+                conversionResult.textContent = `${amount} ${fromCurrency} = ${result.toFixed(2)} ${toCurrency}`;
+            } else {
+                conversionResult.textContent = `Conversion rate for ${toCurrency} not found.`;
+            }
+        })
+        .catch(error => {
+            conversionResult.textContent = `Error fetching data: ${error.message}`;
+        });
+}
+
+async function displayCurrencyRates() {
+    const currencyRatesDiv = document.getElementById('currencyRates');
+    currencyRatesDiv.innerHTML = '<p>Loading...</p>';
+
+    try {
+        const data = await fetchCurrencyRates();
+        const rates = data.rates;
+        const baseCurrency = data.base;
+
+        let html = '<ul>';
+        for (const currency in rates) {
+            if (rates.hasOwnProperty(currency)) {
+                html += `<li>1 ${baseCurrency} = ${rates[currency].toFixed(2)} ${currency}</li>`;
+            }
+        }
+        html += '</ul>';
+
+        currencyRatesDiv.innerHTML = html;
+    } catch (error) {
+        currencyRatesDiv.innerHTML = `<p>Error loading currency rates: ${error.message}</p>`;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    displayCurrencyRates();
 });
